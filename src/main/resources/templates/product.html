@@ -1,0 +1,131 @@
+<!DOCTYPE html> 
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{base::Layout(~{::section})}">
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Product</title>
+    <style>
+        /* Custom styles for shadow and hover effects */
+        .list-group {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .btn-primary {
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <section>
+        <!-- Search Button -->
+        <div class="container-fluid bg-primary p-5 mt-5">
+            <div class="row">
+                <div class="col-md-8 offset-md-2">
+                    <form>
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="ch" placeholder="Search for products...">
+                            <button class="btn btn-light text-dark ms-3 col-md-2"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- List Items -->
+        <div class="container-fluid mt-1">
+            <div class="row">
+                <!-- Categories -->
+                <div class="col-md-2">
+                    <div class="card shadow-sm p-0 mb-5 bg-body-tertiary rounded">
+                        <div class="card-body">
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-action active" aria-current="true">
+                                    Categories</a>
+                                <a href="#" class="list-group-item list-group-item-action">Electronics</a>
+                                <a href="#" class="list-group-item list-group-item-action">Mobile</a>
+                                <a href="#" class="list-group-item list-group-item-action">Clothes</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Products -->
+                <div class="col-md-10">
+                    <div class="card">
+                        <div class="card shadow-sm p-0 mb-5 bg-body-tertiary rounded">
+
+                            <div class="card-body">
+                                <p class="fs-3 text-center">Products</p>
+                                <div class="row">
+                                    <!-- Product 1 -->
+                                    <div class="col-md-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <img src="https://via.placeholder.com/200" alt="Product Image" width="100%" height="200px">
+                                                <p class="fs-5 text-center">Laptop</p>
+                                                <div class="row text-center">
+                                                    <p class="fs-6 fw-bold">$50000 <span class="fs-6 text-success"> 20% off</span></p>
+                                                    <a href="/product" class="btn btn-primary col-md-6 offset-md-3">View Details</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Product 2 -->
+                                    <div class="col-md-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <img src="https://via.placeholder.com/200" alt="Product Image" width="100%" height="200px">
+                                                <p class="fs-5 text-center">Smartphone</p>
+                                                <div class="row text-center">
+                                                    <p class="fs-6 fw-bold">$30000 <span class="fs-6 text-success"> 15% off</span></p>
+                                                    <a class="btn btn-primary col-md-6 offset-md-3">View Details</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Product 3 -->
+                                    <div class="col-md-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <img src="https://via.placeholder.com/200" alt="Product Image" width="100%" height="200px">
+                                                <p class="fs-5 text-center">Headphones</p>
+                                                <div class="row text-center">
+                                                    <p class="fs-6 fw-bold">$2000 <span class="fs-6 text-success"> 10% off</span></p>
+                                                    <a class="btn btn-primary col-md-6 offset-md-3">View Details</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Product 4 -->
+                                    <div class="col-md-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <img src="https://via.placeholder.com/200" alt="Product Image" width="100%" height="200px">
+                                                <p class="fs-5 text-center">Camera</p>
+                                                <div class="row text-center">
+                                                    <p class="fs-6 fw-bold">$15000 <span class="fs-6 text-success"> 25% off</span></p>
+                                                    <a class="btn btn-primary col-md-6 offset-md-3">View Details</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> <!-- End Row -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>           
+</body> 
+</html>
