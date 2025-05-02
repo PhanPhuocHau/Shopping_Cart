@@ -27,8 +27,7 @@
                         <div class="card-body">
                             <form action="/admin/saveCategory" method="post" enctype="multipart/form-data">
                                 <div class="mb-3">
-                                    <label for="categoryName">Enter Category</label>
-                                    <input type="text" name="name" class="form-control">
+                                    <label>Enter Category</label><input type="text" name="name" class="form-control">
                                 </div>
                                 <div class="mb-3">
                                     <label>Status:</label>
@@ -42,7 +41,7 @@
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="categoryImage">Upload Image</label>
+                                    <label>Upload Image</label>
                                     <input type="file" name="file" class="form-control">
                                 </div>
                                 <button class="btn btn-primary col-md-12 mt-2">Save</button>
@@ -66,15 +65,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr th:each="category, iterStat : ${categories}">
-                                        <th scope="row" th:text="${iterStat.index + 1}"></th>
-                                        <td th:text="${category.name}"></td>
+                                    <tr th:each="cat, c:${categories}">
+                                        <th scope="row">[[${c.count}]]</th>
+                                        <td>[[${c.name}]]</td>
+                                        <td>[[${cat.isActive}]]</td>
+                                        <td><img th:src="@{'/img/category_img/'+${cat.imageName}}" width="50px" height="50px"></td>
                                         <td>
-                                            <img th:src="@{'/img/category/' + ${category.image}}" alt="Category Image" width="50">
-                                        </td>
-                                        <td>
-                                            <a href="#" class="btn btn-warning btn-sm">Edit</a>
-                                            <a href="#" class="btn btn-danger btn-sm">Delete</a>
+                                            <a href="#" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen-to-square  fa-1x"></i>Edit</a>
+                                            <a href="#" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash  fa-1x"></i>Delete</a>
                                         </td>
                                     </tr>
                                 </tbody>
