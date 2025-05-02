@@ -12,11 +12,12 @@ public class CommonServiceImpl implements CommonService {
 
     @Override
     public void removeSessionMessage() {
-        HttpServletRequest request = ((ServletRequestAttributes) (RequestContextHolder.getRequestAttributes()))
-                .getRequest();
-        HttpSession session = request.getSession();
-        session.removeAttribute("succMsg");
-        session.removeAttribute("errorMsg");
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            HttpSession session = request.getSession();
+            session.removeAttribute("succMsg");
+            session.removeAttribute("errorMsg");
+        }
     }
-
 }

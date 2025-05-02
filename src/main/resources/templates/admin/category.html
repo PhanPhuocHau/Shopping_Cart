@@ -27,7 +27,8 @@
                         <div class="card-body">
                             <form action="/admin/saveCategory" method="post" enctype="multipart/form-data">
                                 <div class="mb-3">
-                                    <label>Enter Category</label><input type="text" name="name" class="form-control">
+                                    <label for="categoryName">Enter Category</label>
+                                    <input type="text" name="name" class="form-control">
                                 </div>
                                 <div class="mb-3">
                                     <label>Status:</label>
@@ -41,7 +42,7 @@
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label>Upload Image</label>
+                                    <label for="categoryImage">Upload Image</label>
                                     <input type="file" name="file" class="form-control">
                                 </div>
                                 <button class="btn btn-primary col-md-12 mt-2">Save</button>
@@ -53,31 +54,38 @@
                 <!-- Category Details Table -->
                 <div class="col-md-8">
                     <div class="card card-sh">
-                        <div class="card-header text-center fs-4">Category Details</div>
-                        <div class="card-body">
-                            <table class="table table-striped table-hover">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Sl No</th>
-                                        <th scope="col">Category</th>
-                                        <th scope="col">Image</th>
-                                        <th scope="col">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="cat, c:${categories}">
-                                        <th scope="row">[[${c.count}]]</th>
-                                        <td>[[${c.name}]]</td>
-                                        <td>[[${cat.isActive}]]</td>
-                                        <td><img th:src="@{'/img/category_img/'+${cat.imageName}}" width="50px" height="50px"></td>
-                                        <td>
-                                            <a href="#" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen-to-square  fa-1x"></i>Edit</a>
-                                            <a href="#" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash  fa-1x"></i>Delete</a>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+						<div class="card-header text-center fs-4">Category Details</div>
+						<div class="card-body">
+							<table class="table">
+								<thead>
+									<tr>
+										<th scope="col">Sl No</th>
+										<th scope="col">Category</th>
+										<th scope="col">Status</th>
+										<th scope="col">Image</th>
+										<th scope="col">Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr th:each="cat,c:${categorys}">
+										<th scope="row">[[${c.count}]]</th>
+										<td>[[${cat.name}]]</td>
+										<td>[[${cat.isActive}]]</td>
+										<td><img
+											th:src="@{'/img/category_img/'+${cat.imageName}}"
+											width="50px" height="50px"></td>
+										<td><a th:href="@{'/admin/loadEditCategory/'+${cat.id}}" class="btn btn-primary btn-sm"><i
+												class="fa-solid fa-pen-to-square  fa-1x"></i> Edit </a> 
+												
+											<a
+											th:href="@{'/admin/deleteCategory/'+${cat.id}}"
+											class="btn btn-danger btn-sm"><i
+												class="fa-solid fa-trash  fa-1x"></i>Delete</a></td>
+									</tr>
+
+								</tbody>
+							</table>
+						</div>
                     </div>
                 </div>
             </div>
