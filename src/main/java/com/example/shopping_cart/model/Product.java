@@ -1,6 +1,10 @@
 package com.example.shopping_cart.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,5 +34,8 @@ public class Product {
     private int stock;
 
     private String image;
+
+    private int discount;
+    private double discountPrice;
 
 }
