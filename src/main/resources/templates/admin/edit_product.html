@@ -57,8 +57,7 @@
                                 <div class="mb-3 col">
                                     <label>Discount</label>  <input type ="number" name="discount"
 										th:value="${product.discount}" class="form-control">
-                                     
-                                    </select>
+
                                 </div>
 
                                 <div class="mb-3 col">
@@ -66,6 +65,19 @@
                                         th:value="${product.discountPrice}" class="form-control">
                                 </div>
 							</div>
+
+                                <div class="mb-3">
+                                    <label>Status:</label>
+                                    <div class="form-check">
+                                        <input type="radio" class="form-check-input" name="isActive" th:checked="${product.active == true}" id="flexRadioDefault1" checked value="true">
+                                        <label class="form-check-label" for="flexRadioDefault1">Active</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="radio" class="form-check-input" name="isActive" th:checked="${product.active == false}" id="flexRadioDefault2" value="false">
+                                        <label class="form-check-label" for="flexRadioDefault2">Inactive</label>
+                                    </div>
+                                </div>
+
                                 <div class="row">
 
                                     <div class="mb-3 col">

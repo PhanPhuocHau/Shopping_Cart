@@ -149,30 +149,35 @@ public class AdminController {
 
 	@PostMapping("/saveProduct")
 	public String saveProduct(@ModelAttribute Product product, @RequestParam("file") MultipartFile image,
-			HttpSession session) throws IOException {
+							  HttpSession session) throws IOException {
 
-		String imageName = image.isEmpty() ? "default.jpg" : image.getOriginalFilename();
-
+		String imageName = image.isEmpty() ? "default.jpg" : image.getOriginalFilename().replaceAll(" ", "_");
 		product.setImage(imageName);
 		product.setDiscount(0);
 		product.setDiscountPrice(product.getPrice());
 
-
 		Product saveProduct = productService.saveProduct(product);
 
 		if (!ObjectUtils.isEmpty(saveProduct)) {
+			try {
+				File saveFile = new ClassPathResource("static/img").getFile();
+				File productImgDir = new File(saveFile, "product_img");
 
-			File saveFile = new ClassPathResource("").getFile();
+				// Create the directory if it does not exist
+				if (!productImgDir.exists()) {
+					productImgDir.mkdirs();
+				}
 
-			Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "product_img" + File.separator
-					+ image.getOriginalFilename());
+				Path path = Paths.get(productImgDir.getAbsolutePath(), imageName);
+				Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 
-			// System.out.println(path);
-			Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-
-			session.setAttribute("succMsg", "Product Saved Success");
+				session.setAttribute("succMsg", "Product Saved Successfully");
+			} catch (IOException e) {
+				session.setAttribute("errorMsg", "Error while saving product image");
+				e.printStackTrace();
+			}
 		} else {
-			session.setAttribute("errorMsg", "something wrong on server");
+			session.setAttribute("errorMsg", "Something went wrong on the server");
 		}
 
 		return "redirect:/admin/loadAddProduct";
