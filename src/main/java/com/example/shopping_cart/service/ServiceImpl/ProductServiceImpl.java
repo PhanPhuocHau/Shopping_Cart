@@ -8,8 +8,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -22,85 +20,86 @@ import com.example.shopping_cart.service.ProductService;
 
 @Service
 public class ProductServiceImpl implements ProductService {
-    
-    private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
-    
-    @Autowired
-    private ProductRepository productRepository;
 
-    @Override
-    public Product saveProduct(Product product) {
-        return productRepository.save(product);
-    }
+	@Autowired
+	private ProductRepository productRepository;
 
-    @Override
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
+	@Override
+	public Product saveProduct(Product product) {
+		return productRepository.save(product);
+	}
 
-    @Override
-    public Boolean deleteProduct(Integer id) {
-        Product product = productRepository.findById(id).orElse(null);
+	@Override
+	public List<Product> getAllProducts() {
+		return productRepository.findAll();
+	}
 
-        if (!ObjectUtils.isEmpty(product)) {
-            productRepository.delete(product);
-            return true;
-        }
-        return false;
-    }
+	@Override
+	public Boolean deleteProduct(Integer id) {
+		Product product = productRepository.findById(id).orElse(null);
 
-    @Override
-    public Product getProductById(Integer id) {
-        return productRepository.findById(id).orElse(null);
-    }
+		if (!ObjectUtils.isEmpty(product)) {
+			productRepository.delete(product);
+			return true;
+		}
+		return false;
+	}
 
-    @Override
-    public Product updateProduct(Product product, MultipartFile image) {
-        Product dbProduct = getProductById(product.getId());
+	@Override
+	public Product getProductById(Integer id) {
+		Product product = productRepository.findById(id).orElse(null);
+		return product;
+	}
 
-        String imageName = image.isEmpty() ? dbProduct.getImage() : image.getOriginalFilename();
+	@Override
+	public Product updateProduct(Product product, MultipartFile image) {
 
-        dbProduct.setTitle(product.getTitle());
-        dbProduct.setDescription(product.getDescription());
-        dbProduct.setCategory(product.getCategory());
-        dbProduct.setPrice(product.getPrice());
-        dbProduct.setStock(product.getStock());
-        dbProduct.setImage(imageName);
-        dbProduct.setActive(product.isActive());
+		Product dbProduct = getProductById(product.getId());
 
-        dbProduct.setDiscount(product.getDiscount());
+		String imageName = image.isEmpty() ? dbProduct.getImage() : image.getOriginalFilename();
 
-        Double discount = product.getPrice() * product.getDiscount() / 100;
-        Double discountPrice = product.getPrice() - discount;
-        dbProduct.setDiscountPrice(discountPrice);
-        
-        Product updateProduct = productRepository.save(dbProduct);
+		dbProduct.setTitle(product.getTitle());
+		dbProduct.setDescription(product.getDescription());
+		dbProduct.setCategory(product.getCategory());
+		dbProduct.setPrice(product.getPrice());
+		dbProduct.setStock(product.getStock());
+		dbProduct.setImage(imageName);
+		dbProduct.setActive(product.isActive());
+		dbProduct.setDiscount(product.getDiscount());
 
-        if (!ObjectUtils.isEmpty(updateProduct)) {
-            if (!image.isEmpty()) {
-                try {
-                    File saveFile = new ClassPathResource("static/img").getFile();
+		// 5=100*(5/100); 100-5=95
+		Double disocunt = product.getPrice() * (product.getDiscount() / 100.0);
+		Double discountPrice = product.getPrice() - disocunt;
+		dbProduct.setDiscountPrice(discountPrice);
 
-                    Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "product_img" + File.separator
-                            + image.getOriginalFilename());
-                    Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    logger.error("Error while saving product image", e);
-                }
-            }
-            return updateProduct;
-        }
+		Product updateProduct = productRepository.save(dbProduct);
 
-        return null;
-    }
-    @Override
-    public List<Product> getAllActiveProducts(String category) {
-        List<Product> products = null;
-        if(ObjectUtils.isEmpty(category)) {
-            products = productRepository.findByIsActiveTrue();
-        }else {
-            products = productRepository.findByCategory(category);
-        }
-        return products;
-    }
+		if (!ObjectUtils.isEmpty(updateProduct)) {
+
+			if (!image.isEmpty()) {
+
+				try {
+					File saveFile = new ClassPathResource("static/img").getFile();
+
+					Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "product_img" + File.separator
+							+ image.getOriginalFilename());
+					Files.copy(image.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+
+				} catch (IOException e) {
+				}
+			}
+			return product;
+		}
+		return null;
+	}
+
+	@Override
+	public List<Product> getAllActiveProducts(String category) {
+		if (ObjectUtils.isEmpty(category)) {
+			return productRepository.findByIsActiveTrue();
+		} else {
+			return productRepository.findByCategory(category);
+		}
+	}
+
 }
