@@ -3,6 +3,9 @@ package com.example.shopping_cart.service.ServiceImpl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -57,4 +60,11 @@ public class CategoryServiceImpl implements CategoryService {
         List<Category> categories  =categoryRepository.findByIsActiveTrue();
         return categories;
     }
+
+    @Override
+    public Page<Category> getAllCategorPagination(Integer pageNo, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        return categoryRepository.findAll(pageable);
+    }
+
 }
