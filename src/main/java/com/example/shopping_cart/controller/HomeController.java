@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collector;
 
+import com.example.shopping_cart.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
@@ -42,90 +43,63 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class HomeController {
 
-	@Autowired
-	private CategoryService categoryService;
+    @Autowired
+    private CategoryService categoryService;
 
-	@Autowired
-	private ProductService productService;
+    @Autowired
+    private ProductService productService;
 
-	@Autowired
-	private UserService userService;
+    @Autowired
+    private UserService userService;
 
-	@Autowired
-	private CommonUtil commonUtil;
+    @Autowired
+    private CommonUtil commonUtil;
 
-	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
-	@ModelAttribute
-	public void getUserDetails(Principal p, Model m) {
-		if (p != null) {
-			String email = p.getName();
-			UserDtls userDtls = userService.getUserByEmail(email);
-			m.addAttribute("user", userDtls);
-			Integer countCart = cartService.getCountCart(userDtls.getId());
-			m.addAttribute("countCart", countCart);
-		}
-		List<Category> allActiveCategory = categoryService.getAllActiveCategory();
-		m.addAttribute("categorys", allActiveCategory);
-	}
+    @Autowired
+    private CartService cartService;
 
-	@GetMapping("/")
-//	public String index() {
-		public String index(Model m) {
+    @ModelAttribute
+    public void getUserDetails(Principal p, Model m) {
+        if (p != null) {
+            String email = p.getName();
+            UserDtls userDtls = userService.getUserByEmail(email);
+            m.addAttribute("user", userDtls);
+            Integer countCart = cartService.getCountCart(userDtls.getId());
+            m.addAttribute("countCart", countCart);
+        }
 
-			List<Category> allActiveCategory = categoryService.getAllActiveCategory().stream()
-					.sorted((c1, c2) -> c2.getId().compareTo(c1.getId())).limit(6).toList();
-			List<Product> allActiveProducts = productService.getAllActiveProducts("").stream()
-					.sorted((p1, p2) -> p2.getId().compareTo(p1.getId())).limit(8).toList();
-			m.addAttribute("category", allActiveCategory);
-			m.addAttribute("products", allActiveProducts);
-		return "index";
-	}
+        List<Category> allActiveCategory = categoryService.getAllActiveCategory();
+        m.addAttribute("categorys", allActiveCategory);
+    }
 
-	@GetMapping("/signin")
-	public String login() {
-		return "login";
-	}
+    @GetMapping("/")
+    public String index() {
+        return "index";
+    }
 
-	@GetMapping("/register")
-	public String register() {
-		return "register";
-	}
+    @GetMapping("/signin")
+    public String login() {
+        return "login";
+    }
 
-	@GetMapping("/products")
-	public String products(Model m, @RequestParam(value = "category", defaultValue = "") String category,
-				@RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
-				@RequestParam(name = "pageSize", defaultValue = "12") Integer pageSize,
-				@RequestParam(defaultValue = "") String ch) {
+    @GetMapping("/register")
+    public String register() {
+        return "register";
+    }
 
-			List<Category> categories = categoryService.getAllActiveCategory();
-//			List<Product> products = productService.getAllActiveProducts(category);
-			m.addAttribute("paramValue", category);
-			m.addAttribute("categories", categories);
-
-//		List<Product> products = productService.getAllActiveProducts(category);
-//		m.addAttribute("products", products);
-			Page<Product> page = null;
-			if (StringUtils.isEmpty(ch)) {
-				page = productService.getAllActiveProductPagination(pageNo, pageSize, category);
-			} else {
-				page = productService.searchActiveProductPagination(pageNo, pageSize, category, ch);
-			}
-
-			List<Product> products = page.getContent();
-			m.addAttribute("products", products);
-//			m.addAttribute("paramValue", category);
-			m.addAttribute("productsSize", products.size());
-
-			m.addAttribute("pageNo", page.getNumber());
-			m.addAttribute("pageSize", pageSize);
-			m.addAttribute("totalElements", page.getTotalElements());
-			m.addAttribute("totalPages", page.getTotalPages());
-			m.addAttribute("isFirst", page.isFirst());
-			m.addAttribute("isLast", page.isLast());
-		return "product";
-		}
+    @GetMapping("/products")
+    public String products(Model m, @RequestParam(value = "category", defaultValue = "") String category) {
+        // System.out.println("category="+category);
+        List<Category> categories = categoryService.getAllActiveCategory();
+        List<Product> products = productService.getAllActiveProducts(category);
+        m.addAttribute("categories", categories);
+        m.addAttribute("products", products);
+        m.addAttribute("paramValue", category);
+        return "product";
+    }
 
     @GetMapping("/product/{id}")
     public String product(@PathVariable int id, Model m) {
@@ -141,47 +115,27 @@ public class HomeController {
         String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
         user.setProfileImage(imageName);
         UserDtls saveUser = userService.saveUser(user);
-        Boolean existsEmail = userService.existsEmail(user.getEmail());
 
         if (!ObjectUtils.isEmpty(saveUser)) {
             if (!file.isEmpty()) {
                 File saveFile = new ClassPathResource("static/img").getFile();
-                if (existsEmail) {
-                    session.setAttribute("errorMsg", "Email already exist");
-                } else {
-                    String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
-                    user.setProfileImage(imageName);
-                    UserDtls saveUser = userService.saveUser(user);
 
-                    Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
-                            + file.getOriginalFilename());
-                    if (!ObjectUtils.isEmpty(saveUser)) {
-                        if (!file.isEmpty()) {
-                            File saveFile = new ClassPathResource("static/img").getFile();
+                Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
+                        + file.getOriginalFilename());
 
 //				System.out.println(path);
-                            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-                            Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
-                                    + file.getOriginalFilename());
-
-//					System.out.println(path);
-                            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-                        }
-                        session.setAttribute("succMsg", "Register successfully");
-                    } else {
-                        session.setAttribute("errorMsg", "something wrong on server");
-                    }
-                    session.setAttribute("succMsg", "Register successfully");
-                } else{
-                    session.setAttribute("errorMsg", "something wrong on server");
-                }
-
-                return "redirect:/register";
+                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
             }
+            session.setAttribute("succMsg", "Register successfully");
+        } else {
+            session.setAttribute("errorMsg", "something wrong on server");
         }
+
+        return "redirect:/register";
     }
 
-    //	Forgot Password Code
+//	Forgot Password Code
+
     @GetMapping("/forgot-password")
     public String showForgotPassword() {
         return "forgot_password.html";
@@ -203,7 +157,7 @@ public class HomeController {
             // Generate URL :
             // http://localhost:8080/reset-password?token=sfgdbgfswegfbdgfewgvsrg
 
-            String url = commonUtil.generateUrl(request) + "/reset-password?token=" + resetToken;
+            String url = CommonUtil.generateUrl(request) + "/reset-password?token=" + resetToken;
 
             Boolean sendMail = commonUtil.sendMail(url, email);
 
@@ -232,7 +186,7 @@ public class HomeController {
 
     @PostMapping("/reset-password")
     public String resetPassword(@RequestParam String token, @RequestParam String password, HttpSession session,
-            Model m) {
+                                Model m) {
 
         UserDtls userByToken = userService.getUserByToken(token);
         if (userByToken == null) {
@@ -242,23 +196,14 @@ public class HomeController {
             userByToken.setPassword(passwordEncoder.encode(password));
             userByToken.setResetToken(null);
             userService.updateUser(userByToken);
-            //session.setAttribute("succMsg", "Password change successfully");
-            m.addAttribute("msg","Password change successfully");
+            // session.setAttribute("succMsg", "Password change successfully");
+            m.addAttribute("msg", "Password change successfully");
 
             return "message";
         }
 
     }
 
-    @GetMapping("/search")
-    public String searchProduct(@RequestParam String ch, Model m) {
-        List<Product> searchProducts = productService.searchProduct(ch);
-        m.addAttribute("products", searchProducts);
-        List<Category> categories = categoryService.getAllActiveCategory();
-        m.addAttribute("categories", categories);
-        return "product";
-
-    }
 }
 
 

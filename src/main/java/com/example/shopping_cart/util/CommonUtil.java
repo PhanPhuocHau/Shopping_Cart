@@ -51,7 +51,7 @@ public class CommonUtil {
         }
     }
     
-    public String generateUrl(HttpServletRequest request) {
+    public static String generateUrl(HttpServletRequest request) {
         String siteURL = request.getRequestURL().toString();
         return siteURL.replace(request.getServletPath(), "");
     }

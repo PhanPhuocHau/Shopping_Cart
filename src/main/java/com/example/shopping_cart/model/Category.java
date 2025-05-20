@@ -10,15 +10,19 @@ import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 @Setter
-@Getter 
 @Entity
 public class Category {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
+
     private String name;
+
     private String imageName;
-    private boolean isActive;
-   
+
+    private Boolean isActive;
+
 }

@@ -43,8 +43,7 @@ public class CartServiceImpl implements CartService {
 
 	@Override
 	public List<Cart> getCartsByUser(Integer userId) {
-		// TODO Auto-generated method stub
-		return null;
+
 		List<Cart> carts = cartRepository.findByUserId(userId);
 
 		Double totalOrderPrice = 0.0;
