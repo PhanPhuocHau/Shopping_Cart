@@ -111,7 +111,11 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDtls updateUser(UserDtls user) {
-		return userRepository.save(user);
-	}
+    // Đảm bảo mật khẩu được mã hóa khi cập nhật
+    if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) { // kiểm tra đã mã hóa chưa
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    }
+    return userRepository.save(user);
+}
 
 }
