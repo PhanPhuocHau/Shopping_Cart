@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+
 import com.example.shopping_cart.model.Cart;
 import com.example.shopping_cart.model.Product;
 import com.example.shopping_cart.model.UserDtls;
@@ -12,20 +13,28 @@ import com.example.shopping_cart.repository.CartRepository;
 import com.example.shopping_cart.repository.ProductRepository;
 import com.example.shopping_cart.repository.UserRepository;
 import com.example.shopping_cart.service.CartService;
+
 @Service
 public class CartServiceImpl implements CartService {
+
 	@Autowired
 	private CartRepository cartRepository;
+
 	@Autowired
 	private UserRepository userRepository;
+
 	@Autowired
 	private ProductRepository productRepository;
+
 	@Override
 	public Cart saveCart(Integer productId, Integer userId) {
+
 		UserDtls userDtls = userRepository.findById(userId).get();
 		Product product = productRepository.findById(productId).get();
+
 		Cart cartStatus = cartRepository.findByProductIdAndUserId(productId, userId);
-		Cart cart = null;
+		 Cart cart;
+
 		if (ObjectUtils.isEmpty(cartStatus)) {
 			cart = new Cart();
 			cart.setProduct(product);
@@ -38,13 +47,12 @@ public class CartServiceImpl implements CartService {
 			cart.setTotalPrice(cart.getQuantity() * cart.getProduct().getDiscountPrice());
 		}
 		Cart saveCart = cartRepository.save(cart);
+
 		return saveCart;
 	}
 
 	@Override
 	public List<Cart> getCartsByUser(Integer userId) {
-		// TODO Auto-generated method stub
-		return null;
 		List<Cart> carts = cartRepository.findByUserId(userId);
 
 		Double totalOrderPrice = 0.0;

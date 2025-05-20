@@ -1,7 +1,6 @@
 package com.example.shopping_cart.model;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;

@@ -1,16 +1,18 @@
 package com.example.shopping_cart.config;
 
 import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+
 import com.example.shopping_cart.model.UserDtls;
 import com.example.shopping_cart.repository.UserRepository;
 import com.example.shopping_cart.service.UserService;
-import com.example.shopping_cart.service.ServiceImpl.UserServiceImpl;
 import com.example.shopping_cart.util.AppConstant;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,11 +34,11 @@ public class AuthFailureHandlerImpl extends SimpleUrlAuthenticationFailureHandle
 			if (userDtls != null) {
 				if (userDtls.getIsEnable()) {
 					if (userDtls.getAccountNonLocked()) {
-						if (userDtls.getFailedAttempt() < AppConstant.ATTEMPT_TIME) {
+						if (userDtls.getFailedAttempt() < AppConstant.ATTEMPT_TIME - 1) {
 							userService.increaseFailedAttempt(userDtls);
 						} else {
 							userService.userAccountLock(userDtls);
-							exception = new LockedException("Your account is locked !! failed attempt 3");
+							exception = new LockedException("Your account is locked !! failed attempt " + AppConstant.ATTEMPT_TIME);
 						}
 							} else {
 								if (userService.unlockAccountTimeExpired(userDtls)) {

@@ -10,7 +10,6 @@ import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collector;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -29,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.shopping_cart.model.Category;
 import com.example.shopping_cart.model.Product;
 import com.example.shopping_cart.model.UserDtls;
+import com.example.shopping_cart.service.CartService;
 import com.example.shopping_cart.service.CategoryService;
 import com.example.shopping_cart.service.ProductService;
 import com.example.shopping_cart.service.UserService;
@@ -57,6 +57,9 @@ public class HomeController {
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 
+    @Autowired
+    private CartService cartService;
+
 	@ModelAttribute
 	public void getUserDetails(Principal p, Model m) {
 		if (p != null) {
@@ -71,13 +74,12 @@ public class HomeController {
 	}
 
 	@GetMapping("/")
-//	public String index() {
-		public String index(Model m) {
+	public String index(Model m) {
 
-			List<Category> allActiveCategory = categoryService.getAllActiveCategory().stream()
-					.sorted((c1, c2) -> c2.getId().compareTo(c1.getId())).limit(6).toList();
-			List<Product> allActiveProducts = productService.getAllActiveProducts("").stream()
-					.sorted((p1, p2) -> p2.getId().compareTo(p1.getId())).limit(8).toList();
+		List<Category> allActiveCategory = categoryService.getAllActiveCategory().stream()
+    .sorted((c1, c2) -> Integer.compare(c2.getId(), c1.getId())).limit(6).toList();
+        List<Product> allActiveProducts = productService.getAllActiveProducts("").stream()
+    .sorted((p1, p2) -> Integer.compare(p2.getId(), p1.getId())).limit(8).toList();
 			m.addAttribute("category", allActiveCategory);
 			m.addAttribute("products", allActiveProducts);
 		return "index";
@@ -100,22 +102,18 @@ public class HomeController {
 				@RequestParam(defaultValue = "") String ch) {
 
 			List<Category> categories = categoryService.getAllActiveCategory();
-//			List<Product> products = productService.getAllActiveProducts(category);
 			m.addAttribute("paramValue", category);
 			m.addAttribute("categories", categories);
 
-//		List<Product> products = productService.getAllActiveProducts(category);
-//		m.addAttribute("products", products);
-			Page<Product> page = null;
-			if (StringUtils.isEmpty(ch)) {
-				page = productService.getAllActiveProductPagination(pageNo, pageSize, category);
-			} else {
-				page = productService.searchActiveProductPagination(pageNo, pageSize, category, ch);
-			}
+            Page<Product> page;
+            if (StringUtils.isEmpty(ch)) {
+                page = productService.getAllActiveProductPagination(pageNo, pageSize, category);
+            } else {
+                page = productService.searchActiveProductPagination(pageNo, pageSize, category, ch);
+            }
 
 			List<Product> products = page.getContent();
 			m.addAttribute("products", products);
-//			m.addAttribute("paramValue", category);
 			m.addAttribute("productsSize", products.size());
 
 			m.addAttribute("pageNo", page.getNumber());
@@ -135,51 +133,31 @@ public class HomeController {
     }
 
     @PostMapping("/saveUser")
-    public String saveUser(@ModelAttribute UserDtls user, @RequestParam("img") MultipartFile file, HttpSession session)
-            throws IOException {
+public String saveUser(@ModelAttribute UserDtls user, @RequestParam("img") MultipartFile file, HttpSession session)
+        throws IOException {
 
-        String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
-        user.setProfileImage(imageName);
-        UserDtls saveUser = userService.saveUser(user);
-        Boolean existsEmail = userService.existsEmail(user.getEmail());
-
-        if (!ObjectUtils.isEmpty(saveUser)) {
-            if (!file.isEmpty()) {
-                File saveFile = new ClassPathResource("static/img").getFile();
-                if (existsEmail) {
-                    session.setAttribute("errorMsg", "Email already exist");
-                } else {
-                    String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
-                    user.setProfileImage(imageName);
-                    UserDtls saveUser = userService.saveUser(user);
-
-                    Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
-                            + file.getOriginalFilename());
-                    if (!ObjectUtils.isEmpty(saveUser)) {
-                        if (!file.isEmpty()) {
-                            File saveFile = new ClassPathResource("static/img").getFile();
-
-//				System.out.println(path);
-                            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-                            Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
-                                    + file.getOriginalFilename());
-
-//					System.out.println(path);
-                            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-                        }
-                        session.setAttribute("succMsg", "Register successfully");
-                    } else {
-                        session.setAttribute("errorMsg", "something wrong on server");
-                    }
-                    session.setAttribute("succMsg", "Register successfully");
-                } else{
-                    session.setAttribute("errorMsg", "something wrong on server");
-                }
-
-                return "redirect:/register";
-            }
-        }
+    Boolean existsEmail = userService.existsEmail(user.getEmail());
+    if (existsEmail) {
+        session.setAttribute("errorMsg", "Email already exist");
+        return "redirect:/register";
     }
+
+    String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
+    user.setProfileImage(imageName);
+    UserDtls saveUser = userService.saveUser(user);
+
+    if (!ObjectUtils.isEmpty(saveUser)) {
+        if (!file.isEmpty()) {
+            File saveFile = new ClassPathResource("static/img").getFile();
+            Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator + file.getOriginalFilename());
+            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+        }
+        session.setAttribute("succMsg", "Register successfully");
+    } else {
+        session.setAttribute("errorMsg", "something wrong on server");
+    }
+    return "redirect:/register";
+}
 
     //	Forgot Password Code
     @GetMapping("/forgot-password")
