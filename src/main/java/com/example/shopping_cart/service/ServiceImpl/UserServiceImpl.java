@@ -1,6 +1,7 @@
 package com.example.shopping_cart.service.ServiceImpl;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,21 +53,20 @@ public class UserServiceImpl implements UserService {
 		return userRepository.findByRole(role);
 	}
 
-	@Override
+		@Override
 	public Boolean updateAccountStatus(Integer id, Boolean status) {
-
 		Optional<UserDtls> findByuser = userRepository.findById(id);
-
 		if (findByuser.isPresent()) {
 			UserDtls userDtls = findByuser.get();
 			userDtls.setIsEnable(status);
+			userDtls.setAccountNonLocked(status); // đồng bộ trạng thái khóa
 			userRepository.save(userDtls);
 			return true;
 		}
-
 		return false;
 	}
 
+		
 	@Override
 	public void increaseFailedAttempt(UserDtls user) {
 		int attempt = user.getFailedAttempt() + 1;
@@ -102,7 +102,12 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void resetAttempt(int userId) {
-
+    Optional<UserDtls> user = userRepository.findById(userId);
+    if (user.isPresent()) {
+        UserDtls u = user.get();
+        u.setFailedAttempt(0);
+        userRepository.save(u);
+    }
 	}
 
 	@Override
@@ -156,8 +161,7 @@ public class UserServiceImpl implements UserService {
 //			System.out.println(path);
 				Files.copy(img.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (IOException e) {
 		}
 
 		return dbUser;
