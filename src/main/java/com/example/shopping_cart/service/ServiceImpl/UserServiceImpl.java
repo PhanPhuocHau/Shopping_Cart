@@ -53,20 +53,21 @@ public class UserServiceImpl implements UserService {
 		return userRepository.findByRole(role);
 	}
 
-		@Override
+	@Override
 	public Boolean updateAccountStatus(Integer id, Boolean status) {
+
 		Optional<UserDtls> findByuser = userRepository.findById(id);
+
 		if (findByuser.isPresent()) {
 			UserDtls userDtls = findByuser.get();
 			userDtls.setIsEnable(status);
-			userDtls.setAccountNonLocked(status); // đồng bộ trạng thái khóa
 			userRepository.save(userDtls);
 			return true;
 		}
+
 		return false;
 	}
 
-		
 	@Override
 	public void increaseFailedAttempt(UserDtls user) {
 		int attempt = user.getFailedAttempt() + 1;
@@ -102,12 +103,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void resetAttempt(int userId) {
-    Optional<UserDtls> user = userRepository.findById(userId);
-    if (user.isPresent()) {
-        UserDtls u = user.get();
-        u.setFailedAttempt(0);
-        userRepository.save(u);
-    }
+
 	}
 
 	@Override
@@ -124,12 +120,8 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDtls updateUser(UserDtls user) {
-    // Đảm bảo mật khẩu được mã hóa khi cập nhật
-    if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) { // kiểm tra đã mã hóa chưa
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-    }
-    return userRepository.save(user);
-}
+		return userRepository.save(user);
+	}
 
 	@Override
 	public UserDtls updateUserProfile(UserDtls user, MultipartFile img) {
@@ -167,21 +159,4 @@ public class UserServiceImpl implements UserService {
 		return dbUser;
 	}
 
-	@Override
-	public UserDtls saveAdmin(UserDtls user) {
-		user.setRole("ROLE_ADMIN");
-		user.setIsEnable(true);
-		user.setAccountNonLocked(true);
-		user.setFailedAttempt(0);
-
-		String encodePassword = passwordEncoder.encode(user.getPassword());
-		user.setPassword(encodePassword);
-		UserDtls saveUser = userRepository.save(user);
-		return saveUser;
-	}
-
-	@Override
-	public Boolean existsEmail(String email) {
-		return userRepository.existsByEmail(email);
-	}
 }
