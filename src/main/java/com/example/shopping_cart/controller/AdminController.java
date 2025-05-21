@@ -9,8 +9,6 @@ import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.List;
 
-import com.example.shopping_cart.service.*;
-import com.example.shopping_cart.util.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
@@ -26,8 +24,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.shopping_cart.model.Category;
 import com.example.shopping_cart.model.Product;
-import com.example.shopping_cart.model.UserDtls;
 import com.example.shopping_cart.model.ProductOrder;
+import com.example.shopping_cart.model.UserDtls;
+import com.example.shopping_cart.service.CartService;
+import com.example.shopping_cart.service.CategoryService;
+import com.example.shopping_cart.service.OrderService;
+import com.example.shopping_cart.service.ProductService;
+import com.example.shopping_cart.service.UserService;
+import com.example.shopping_cart.util.CommonUtil;
+import com.example.shopping_cart.util.OrderStatus;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -49,6 +54,9 @@ public class AdminController {
 
 	@Autowired
 	private OrderService orderService;
+
+	@Autowired
+	private CommonUtil commonUtil;
 
 	@ModelAttribute
 	public void getUserDetails(Principal p, Model m) {
@@ -84,40 +92,38 @@ public class AdminController {
 
 	@PostMapping("/saveCategory")
 	public String saveCategory(@ModelAttribute Category category, @RequestParam("file") MultipartFile file,
-			HttpSession session) throws IOException {
+        HttpSession session) throws IOException {
 
-		String imageName = file != null ? file.getOriginalFilename() : "default.jpg";
-		category.setImageName(imageName);
+    String imageName = (file != null && !file.isEmpty() && file.getOriginalFilename() != null)
+            ? file.getOriginalFilename()
+            : "default.jpg";
+    category.setImageName(imageName);
 
-		Boolean existCategory = categoryService.existCategory(category.getName());
+    Boolean existCategory = categoryService.existCategory(category.getName());
 
-		if (existCategory) {
-			session.setAttribute("errorMsg", "Category Name already exists");
-		} else {
+    if (existCategory) {
+        session.setAttribute("errorMsg", "Category Name already exists");
+    } else {
 
-			Category saveCategory = categoryService.saveCategory(category);
+        Category saveCategory = categoryService.saveCategory(category);
 
-			if (ObjectUtils.isEmpty(saveCategory)) {
-				session.setAttribute("errorMsg", "Not saved ! internal server error");
-			} else {
+        if (ObjectUtils.isEmpty(saveCategory)) {
+            session.setAttribute("errorMsg", "Not saved ! internal server error");
+        } else {
+            if (file != null && !file.isEmpty() && file.getOriginalFilename() != null) {
+                File saveFile = new ClassPathResource("static/img").getFile();
 
-				File saveFile = new ClassPathResource("static/img").getFile();
+                Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "category_img" + File.separator
+                        + file.getOriginalFilename());
 
-				String originalFilename = (file != null && !file.isEmpty() && file.getOriginalFilename() != null) ? file.getOriginalFilename() : "default.jpg";
-				Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "category_img" + File.separator
-						+ originalFilename);
+                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+            }
+            session.setAttribute("succMsg", "Saved successfully");
+        }
+    }
 
-				// System.out.println(path);
-				if (file != null && !file.isEmpty()) {
-					Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-				}
-
-				session.setAttribute("succMsg", "Saved successfully");
-			}
-		}
-
-		return "redirect:/admin/category";
-	}
+    return "redirect:/admin/category";
+}
 
 	@GetMapping("/deleteCategory/{id}")
 	public String deleteCategory(@PathVariable int id, HttpSession session) {
@@ -261,6 +267,7 @@ public class AdminController {
 		}
 		return "redirect:/admin/users";
 	}
+
 	@GetMapping("/orders")
 	public String getAllOrders(Model m) {
 		List<ProductOrder> allOrders = orderService.getAllOrders();
@@ -280,13 +287,19 @@ public class AdminController {
 			}
 		}
 
-        boolean updateOrder = Boolean.TRUE.equals(orderService.updateOrderStatus(id, status));
+		ProductOrder updateOrder = orderService.updateOrderStatus(id, status);
 
-		if (updateOrder) {
+		try {
+			commonUtil.sendMailForProductOrder(updateOrder, status);
+		} catch (Exception e) {
+		}
+
+		if (!ObjectUtils.isEmpty(updateOrder)) {
 			session.setAttribute("succMsg", "Status Updated");
 		} else {
 			session.setAttribute("errorMsg", "status not updated");
 		}
 		return "redirect:/admin/orders";
 	}
+
 }

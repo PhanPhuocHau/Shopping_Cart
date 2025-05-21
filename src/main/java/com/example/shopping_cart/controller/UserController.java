@@ -7,18 +7,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.shopping_cart.model.Cart;
 import com.example.shopping_cart.model.Category;
 import com.example.shopping_cart.model.OrderRequest;
 import com.example.shopping_cart.model.ProductOrder;
 import com.example.shopping_cart.model.UserDtls;
-import com.example.shopping_cart.repository.UserRepository;
 import com.example.shopping_cart.service.CartService;
 import com.example.shopping_cart.service.CategoryService;
 import com.example.shopping_cart.service.OrderService;
 import com.example.shopping_cart.service.UserService;
+import com.example.shopping_cart.util.CommonUtil;
 import com.example.shopping_cart.util.OrderStatus;
 
 import jakarta.servlet.http.HttpSession;
@@ -36,6 +40,9 @@ public class UserController {
 
 	@Autowired
 	private OrderService orderService;
+
+	@Autowired
+	private CommonUtil commonUtil;
 
 	@GetMapping("/")
 	public String home() {
@@ -74,7 +81,7 @@ public class UserController {
 		UserDtls user = getLoggedInUserDetails(p);
 		List<Cart> carts = cartService.getCartsByUser(user.getId());
 		m.addAttribute("carts", carts);
-		if (carts.size() > 0) {
+		if (!carts.isEmpty()) {
 			Double totalOrderPrice = carts.get(carts.size() - 1).getTotalOrderPrice();
 			m.addAttribute("totalOrderPrice", totalOrderPrice);
 		}
@@ -98,7 +105,7 @@ public class UserController {
 		UserDtls user = getLoggedInUserDetails(p);
 		List<Cart> carts = cartService.getCartsByUser(user.getId());
 		m.addAttribute("carts", carts);
-		if (carts.size() > 0) {
+		if (!carts.isEmpty()) {
 			Double orderPrice = carts.get(carts.size() - 1).getTotalOrderPrice();
 			Double totalOrderPrice = carts.get(carts.size() - 1).getTotalOrderPrice() + 250 + 100;
 			m.addAttribute("orderPrice", orderPrice);
@@ -141,16 +148,19 @@ public class UserController {
 			}
 		}
 
-		ProductOrder updatedOrder = orderService.updateOrderStatus(id, status);
-		Boolean updateOrder = updatedOrder != null;
+		ProductOrder updateOrder = orderService.updateOrderStatus(id, status);
+		
+		try {
+			commonUtil.sendMailForProductOrder(updateOrder, status);
+		} catch (Exception e) {
+		}
 
-		if (updateOrder) {
+		if (!ObjectUtils.isEmpty(updateOrder)) {
 			session.setAttribute("succMsg", "Status Updated");
 		} else {
 			session.setAttribute("errorMsg", "status not updated");
 		}
 		return "redirect:/user/user-orders";
 	}
-
 
 }

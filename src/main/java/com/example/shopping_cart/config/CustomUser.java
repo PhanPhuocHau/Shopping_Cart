@@ -11,7 +11,7 @@ import com.example.shopping_cart.model.UserDtls;
 
 public class CustomUser implements UserDetails {
 
-	private UserDtls user;
+	private final UserDtls user;
 
 	public CustomUser(UserDtls user) {
 		super();
