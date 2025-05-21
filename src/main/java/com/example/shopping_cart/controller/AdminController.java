@@ -9,6 +9,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.List;
 
+import com.example.shopping_cart.service.*;
+import com.example.shopping_cart.util.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
@@ -25,10 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.shopping_cart.model.Category;
 import com.example.shopping_cart.model.Product;
 import com.example.shopping_cart.model.UserDtls;
-import com.example.shopping_cart.service.CartService;
-import com.example.shopping_cart.service.CategoryService;
-import com.example.shopping_cart.service.ProductService;
-import com.example.shopping_cart.service.UserService;
+import com.example.shopping_cart.model.ProductOrder;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -47,6 +46,9 @@ public class AdminController {
 
 	@Autowired
 	private CartService cartService;
+
+	@Autowired
+	private OrderService orderService;
 
 	@ModelAttribute
 	public void getUserDetails(Principal p, Model m) {
@@ -259,5 +261,32 @@ public class AdminController {
 		}
 		return "redirect:/admin/users";
 	}
+	@GetMapping("/orders")
+	public String getAllOrders(Model m) {
+		List<ProductOrder> allOrders = orderService.getAllOrders();
+		m.addAttribute("orders", allOrders);
+		return "/admin/orders";
+	}
 
+	@PostMapping("/update-order-status")
+	public String updateOrderStatus(@RequestParam Integer id, @RequestParam Integer st, HttpSession session) {
+
+		OrderStatus[] values = OrderStatus.values();
+		String status = null;
+
+		for (OrderStatus orderSt : values) {
+			if (orderSt.getId().equals(st)) {
+				status = orderSt.getName();
+			}
+		}
+
+        boolean updateOrder = Boolean.TRUE.equals(orderService.updateOrderStatus(id, status));
+
+		if (updateOrder) {
+			session.setAttribute("succMsg", "Status Updated");
+		} else {
+			session.setAttribute("errorMsg", "status not updated");
+		}
+		return "redirect:/admin/orders";
+	}
 }

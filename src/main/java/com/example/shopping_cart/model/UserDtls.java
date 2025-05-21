@@ -44,7 +44,8 @@ public class UserDtls {
 
 	private Boolean isEnable;
 
-	private Boolean accountNonLocked;
+	private Boolean accountNonLocked
+			;
 
 	private Integer failedAttempt;
 

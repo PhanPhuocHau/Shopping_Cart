@@ -7,17 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.shopping_cart.model.Cart;
 import com.example.shopping_cart.model.Category;
+import com.example.shopping_cart.model.OrderRequest;
+import com.example.shopping_cart.model.ProductOrder;
 import com.example.shopping_cart.model.UserDtls;
+import com.example.shopping_cart.repository.UserRepository;
 import com.example.shopping_cart.service.CartService;
 import com.example.shopping_cart.service.CategoryService;
+import com.example.shopping_cart.service.OrderService;
 import com.example.shopping_cart.service.UserService;
+import com.example.shopping_cart.util.OrderStatus;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -31,6 +33,9 @@ public class UserController {
 
 	@Autowired
 	private CartService cartService;
+
+	@Autowired
+	private OrderService orderService;
 
 	@GetMapping("/")
 	public String home() {
@@ -69,7 +74,7 @@ public class UserController {
 		UserDtls user = getLoggedInUserDetails(p);
 		List<Cart> carts = cartService.getCartsByUser(user.getId());
 		m.addAttribute("carts", carts);
-		if (!carts.isEmpty()) {
+		if (carts.size() > 0) {
 			Double totalOrderPrice = carts.get(carts.size() - 1).getTotalOrderPrice();
 			m.addAttribute("totalOrderPrice", totalOrderPrice);
 		}
@@ -87,5 +92,65 @@ public class UserController {
 		UserDtls userDtls = userService.getUserByEmail(email);
 		return userDtls;
 	}
+
+	@GetMapping("/orders")
+	public String orderPage(Principal p, Model m) {
+		UserDtls user = getLoggedInUserDetails(p);
+		List<Cart> carts = cartService.getCartsByUser(user.getId());
+		m.addAttribute("carts", carts);
+		if (carts.size() > 0) {
+			Double orderPrice = carts.get(carts.size() - 1).getTotalOrderPrice();
+			Double totalOrderPrice = carts.get(carts.size() - 1).getTotalOrderPrice() + 250 + 100;
+			m.addAttribute("orderPrice", orderPrice);
+			m.addAttribute("totalOrderPrice", totalOrderPrice);
+		}
+		return "/user/order";
+	}
+
+	@PostMapping("/save-order")
+	public String saveOrder(@ModelAttribute OrderRequest request, Principal p) throws Exception {
+		// System.out.println(request);
+		UserDtls user = getLoggedInUserDetails(p);
+		orderService.saveOrder(user.getId(), request);
+
+		return "redirect:/user/success";
+	}
+
+	@GetMapping("/success")
+	public String loadSuccess() {
+		return "/user/success";
+	}
+
+	@GetMapping("/user-orders")
+	public String myOrder(Model m, Principal p) {
+		UserDtls loginUser = getLoggedInUserDetails(p);
+		List<ProductOrder> orders = orderService.getOrdersByUser(loginUser.getId());
+		m.addAttribute("orders", orders);
+		return "/user/my_orders";
+	}
+
+	@GetMapping("/update-status")
+	public String updateOrderStatus(@RequestParam Integer id, @RequestParam Integer st, HttpSession session) {
+
+		OrderStatus[] values = OrderStatus.values();
+		String status = null;
+
+		for (OrderStatus orderSt : values) {
+			if (orderSt.getId().equals(st)) {
+				status = orderSt.getName();
+			}
+		}
+
+		ProductOrder updatedOrder = orderService.updateOrderStatus(id, status);
+		Boolean updateOrder = updatedOrder != null;
+
+		if (updateOrder) {
+			session.setAttribute("succMsg", "Status Updated");
+		} else {
+			session.setAttribute("errorMsg", "status not updated");
+		}
+		return "redirect:/user/user-orders";
+	}
+
 
 }

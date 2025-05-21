@@ -34,7 +34,7 @@ public class OrderServiceImpl implements OrderService {
     private CommonUtil commonUtil;
 
     @Override
-    public void saveOrder(Integer userid, OrderRequest orderRequest) throws Exception {
+    public void saveOrder(Integer userid, OrderRequest orderRequest) {
 
         List<Cart> carts = cartRepository.findByUserId(userid);
 
@@ -66,8 +66,8 @@ public class OrderServiceImpl implements OrderService {
 
             order.setOrderAddress(address);
 
-            ProductOrder saveOrder = orderRepository.save(order);
-            commonUtil.sendMailForProductOrder(saveOrder, "success");
+            orderRepository.save(order);
+
         }
     }
 
