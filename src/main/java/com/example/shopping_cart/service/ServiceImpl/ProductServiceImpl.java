@@ -29,13 +29,11 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public Product saveProduct(Product product) {
-
 		return productRepository.save(product);
 	}
 
 	@Override
 	public List<Product> getAllProducts() {
-
 		return productRepository.findAll();
 	}
 
@@ -129,22 +127,13 @@ public class ProductServiceImpl implements ProductService {
 	public Page<Product> getAllActiveProductPagination(Integer pageNo, Integer pageSize, String category) {
 
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		Page<Product> pageProduct = null;
 
-		Page<Product> pageProduct = ObjectUtils.isEmpty(category)
-				? productRepository.findByIsActiveTrue(pageable)
-				: productRepository.findByCategory(pageable, category);
-
-		return pageProduct;
-	}
-
-	@Override
-	public Page<Product> searchActiveProductPagination(Integer pageNo, Integer pageSize, String category, String ch) {
-
-		Pageable pageable = PageRequest.of(pageNo, pageSize);
-
-		Page<Product> pageProduct = productRepository.findByisActiveTrueAndTitleContainingIgnoreCaseOrCategoryContainingIgnoreCase(ch,
-				ch, pageable);
-
+		if (ObjectUtils.isEmpty(category)) {
+			pageProduct = productRepository.findByIsActiveTrue(pageable);
+		} else {
+			pageProduct = productRepository.findByCategory(pageable, category);
+		}
 		return pageProduct;
 	}
 
