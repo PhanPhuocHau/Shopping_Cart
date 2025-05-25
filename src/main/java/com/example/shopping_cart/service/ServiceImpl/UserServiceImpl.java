@@ -158,5 +158,10 @@ public class UserServiceImpl implements UserService {
 
 		return dbUser;
 	}
+	@Override
+	public Boolean existsEmail(String email) {
+		return userRepository.existsByEmail(email);
+	}
+
 
 }
