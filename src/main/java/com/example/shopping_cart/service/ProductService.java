@@ -9,7 +9,7 @@ import com.example.shopping_cart.model.Product;
 
 public interface ProductService {
 
-    public Product saveProduct(Product product);
+	public Product saveProduct(Product product);
 
 	public List<Product> getAllProducts();
 
@@ -29,5 +29,4 @@ public interface ProductService {
 
 	public Page<Product> getAllProductsPagination(Integer pageNo, Integer pageSize);
 
-	public Page<Product> searchActiveProductPagination(Integer pageNo, Integer pageSize, String category, String ch);
 }

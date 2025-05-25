@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -73,7 +74,15 @@ public class HomeController {
 	}
 
 	@GetMapping("/")
-	public String index() {
+	public String index(Model m) {
+		
+		List<Category> allActiveCategory = categoryService.getAllActiveCategory().stream().sorted((c1,c2)->c2.getId().compareTo(c1.getId()))
+		.limit(6).toList();
+		List<Product> allActiveProducts = productService.getAllActiveProducts("").stream()
+		.sorted((c1,c2)->c2.getId().compareTo(c1.getId()))
+		.limit(8).toList();
+		m.addAttribute("categorys", allActiveCategory);
+		m.addAttribute("products", allActiveProducts);		
 		return "index";
 	}
 
@@ -88,15 +97,41 @@ public class HomeController {
 	}
 
 	@GetMapping("/products")
-	public String products(Model m, @RequestParam(value = "category", defaultValue = "") String category) {
-		// System.out.println("category="+category);
-		List<Category> categories = categoryService.getAllActiveCategory();
-		List<Product> products = productService.getAllActiveProducts(category);
-		m.addAttribute("categories", categories);
-		m.addAttribute("products", products);
-		m.addAttribute("paramValue", category);
-		return "product";
-	}
+public String products(Model m,
+                       @RequestParam(value = "category", defaultValue = "") String category,
+                       @RequestParam(value = "ch", defaultValue = "") String ch,
+                       @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
+                       @RequestParam(name = "pageSize", defaultValue = "9") Integer pageSize) {
+    List<Category> categories = categoryService.getAllActiveCategory();
+    m.addAttribute("paramValue", category);
+    m.addAttribute("categories", categories);
+
+    List<Product> products;
+    if (ch != null && !ch.isEmpty()) {
+        products = productService.searchProduct(ch);
+        m.addAttribute("products", products);
+        m.addAttribute("productsSize", products.size());
+        // Không cần phân trang khi tìm kiếm
+        m.addAttribute("pageNo", 0);
+        m.addAttribute("pageSize", products.size());
+        m.addAttribute("totalElements", products.size());
+        m.addAttribute("totalPages", 1);
+        m.addAttribute("isFirst", true);
+        m.addAttribute("isLast", true);
+    } else {
+        Page<Product> page = productService.getAllActiveProductPagination(pageNo, pageSize, category);
+        products = page.getContent();
+        m.addAttribute("products", products);
+        m.addAttribute("productsSize", products.size());
+        m.addAttribute("pageNo", page.getNumber());
+        m.addAttribute("pageSize", pageSize);
+        m.addAttribute("totalElements", page.getTotalElements());
+        m.addAttribute("totalPages", page.getTotalPages());
+        m.addAttribute("isFirst", page.isFirst());
+        m.addAttribute("isLast", page.isLast());
+    }
+    return "product";
+}
 
 	@GetMapping("/product/{id}")
 	public String product(@PathVariable int id, Model m) {
@@ -108,7 +143,11 @@ public class HomeController {
 	@PostMapping("/saveUser")
 	public String saveUser(@ModelAttribute UserDtls user, @RequestParam("img") MultipartFile file, HttpSession session)
 			throws IOException {
+			Boolean existsEmail = userService.existsEmail(user.getEmail());
 
+		if (existsEmail) {
+			session.setAttribute("errorMsg", "Email already exist");
+		} else {	
 		String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
 		user.setProfileImage(imageName);
 		UserDtls saveUser = userService.saveUser(user);
@@ -126,7 +165,7 @@ public class HomeController {
 		} else {
 			session.setAttribute("errorMsg", "something wrong on server");
 		}
-
+	}
 		return "redirect:/register";
 	}
 
@@ -199,5 +238,19 @@ public class HomeController {
 		}
 
 	}
-
+	@GetMapping("/search")
+		public String searchProduct(@RequestParam String ch, Model m) {
+			List<Product> searchProducts = productService.searchProduct(ch);
+			m.addAttribute("products", searchProducts);
+			m.addAttribute("productsSize", searchProducts.size());
+			m.addAttribute("pageNo", 0);
+			m.addAttribute("pageSize", searchProducts.size());
+			m.addAttribute("totalElements", searchProducts.size());
+			m.addAttribute("totalPages", 1);
+			m.addAttribute("isFirst", true);
+			m.addAttribute("isLast", true);
+			List<Category> categories = categoryService.getAllActiveCategory();
+			m.addAttribute("categories", categories);
+			return "product";
+}
 }
