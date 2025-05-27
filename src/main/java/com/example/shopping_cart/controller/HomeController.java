@@ -214,14 +214,22 @@ public class HomeController {
 		}
 
 	}
+
 	@GetMapping("/search")
 	public String searchProduct(@RequestParam String ch, Model m) {
 		List<Product> searchProducts = productService.searchProduct(ch);
 		m.addAttribute("products", searchProducts);
+		m.addAttribute("productsSize", searchProducts.size());
+		m.addAttribute("pageNo", 0);
+		m.addAttribute("pageSize", searchProducts.size());
+		m.addAttribute("totalElements", searchProducts.size());
+		m.addAttribute("totalPages", 1);
+		m.addAttribute("isFirst", true);
+		m.addAttribute("isLast", true);
 		List<Category> categories = categoryService.getAllActiveCategory();
 		m.addAttribute("categories", categories);
 		return "product";
-
 	}
+
 
 }
