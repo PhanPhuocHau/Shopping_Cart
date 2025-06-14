@@ -97,7 +97,7 @@
 										<li class="page-item"
 											th:classappend="${isFirst} ? 'disabled':''">
 											<a class="page-link"
-											th:href="@{'/products?pageNo='+${pageNo-1}}"
+											th:href="@{'/products?pageNo='+${pageNo - 1}}"
 											aria-label="Previous">
 												<span aria-hidden="true">&laquo;</span>
 											</a>
@@ -107,7 +107,7 @@
 											class="page-item"
 											th:classappend="${pageNo+1==i}?'active':''">
 											<a class="page-link"
-											th:href="@{'/products?pageNo='+${i-1}}">[[${i}]]</a>
+											th:href="@{'/products?pageNo='+${i - 1}}">[[${i}]]</a>
 										</li>
 
 										<li class="page-item"
@@ -120,7 +120,7 @@
 										</li>
 									</ul>
 								</div>
-						</div>
+							</div>
 						</th:block>
 					</div>
 
