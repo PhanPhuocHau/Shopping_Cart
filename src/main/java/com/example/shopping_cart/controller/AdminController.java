@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.shopping_cart.model.Category;
@@ -88,7 +87,7 @@ public class AdminController {
 
 	@GetMapping("/category")
 	public String category(Model m, @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
-						   @RequestParam(name = "pageSize", defaultValue = "2") Integer pageSize) {
+						   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
 		// m.addAttribute("categorys", categoryService.getAllCategory());
 		Page<Category> page = categoryService.getAllCategorPagination(pageNo, pageSize);
 		List<Category> categorys = page.getContent();
@@ -225,7 +224,7 @@ public class AdminController {
 	@GetMapping("/products")
 	public String loadViewProduct(Model m, @RequestParam(defaultValue = "") String ch,
 								  @RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
-								  @RequestParam(name = "pageSize", defaultValue = "2") Integer pageSize) {
+								  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
 
 //		List<Product> products = null;
 //		if (ch != null && ch.length() > 0) {
@@ -235,7 +234,7 @@ public class AdminController {
 //		}
 //		m.addAttribute("products", products);
 
-		Page<Product> page = null;
+		Page<Product> page;
 		if (ch != null && ch.length() > 0) {
 			page = productService.searchProductPagination(pageNo, pageSize, ch);
 		} else {
@@ -308,7 +307,7 @@ public class AdminController {
 
 	@GetMapping("/orders")
 	public String getAllOrders(Model m,@RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
-							   @RequestParam(name = "pageSize", defaultValue = "2") Integer pageSize) {
+							   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
 //		List<ProductOrder> allOrders = orderService.getAllOrders();
 //		m.addAttribute("orders", allOrders);
 //		m.addAttribute("srch", false);
@@ -356,7 +355,7 @@ public class AdminController {
 
 	@GetMapping("/search-order")
 	public String searchProduct(@RequestParam String orderId, Model m, HttpSession session,@RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
-								@RequestParam(name = "pageSize", defaultValue = "2") Integer pageSize) {
+								@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
 
 		if (orderId != null && orderId.length() > 0) {
 

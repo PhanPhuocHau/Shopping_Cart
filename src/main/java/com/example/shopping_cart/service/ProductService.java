@@ -29,5 +29,4 @@ public interface ProductService {
 
 	public Page<Product> getAllProductsPagination(Integer pageNo, Integer pageSize);
 
-
 }

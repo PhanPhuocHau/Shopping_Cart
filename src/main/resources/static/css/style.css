@@ -1,5 +1,8 @@
 body {
     background: #fff !important;
+     font-family: "Forum", serif;
+  font-weight: 400;
+  font-style: normal;
 }
 .bg-light,
 .bg-body-tertiary,
@@ -103,14 +106,3 @@ body {
     object-fit: fit;
     background: #fcf8f8;
 }
-
-.form-check-input:checked {
-    background-color: black; /* Màu nền của dấu tick */
-    border-color: black;     /* Màu viền của dấu tick */
-}
-
-.btn{
-    background-color: black;
-    border-color: black;
-}
-

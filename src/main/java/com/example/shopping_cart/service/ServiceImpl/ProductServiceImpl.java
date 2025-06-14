@@ -127,14 +127,11 @@ public class ProductServiceImpl implements ProductService {
 	public Page<Product> getAllActiveProductPagination(Integer pageNo, Integer pageSize, String category) {
 
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
-		Page<Product> pageProduct = null;
-
 		if (ObjectUtils.isEmpty(category)) {
-			pageProduct = productRepository.findByIsActiveTrue(pageable);
+			return productRepository.findByIsActiveTrue(pageable);
 		} else {
-			pageProduct = productRepository.findByCategory(pageable, category);
+			return productRepository.findByCategory(pageable, category);
 		}
-		return pageProduct;
 	}
 
 }
