@@ -12,6 +12,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
@@ -58,6 +59,9 @@ public class AdminController {
 
 	@Autowired
 	private CommonUtil commonUtil;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@ModelAttribute
 	public void getUserDetails(Principal p, Model m) {
@@ -391,4 +395,75 @@ public class AdminController {
 
 	}
 
+		@GetMapping("/add-admin")
+	public String loadAdminAdd() {
+		return "/admin/add_admin";
+	}
+
+	@PostMapping("/save-admin")
+	public String saveAdmin(@ModelAttribute UserDtls user, @RequestParam("img") MultipartFile file, HttpSession session)
+			throws IOException {
+
+		String imageName = file.isEmpty() ? "default.jpg" : file.getOriginalFilename();
+		user.setProfileImage(imageName);
+		UserDtls saveUser = userService.saveAdmin(user);
+
+		if (!ObjectUtils.isEmpty(saveUser)) {
+			if (!file.isEmpty()) {
+				File saveFile = new ClassPathResource("static/img").getFile();
+
+				Path path = Paths.get(saveFile.getAbsolutePath() + File.separator + "profile_img" + File.separator
+						+ file.getOriginalFilename());
+
+//				System.out.println(path);
+				Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+			}
+			session.setAttribute("succMsg", "Register successfully");
+		} else {
+			session.setAttribute("errorMsg", "something wrong on server");
+		}
+
+		return "redirect:/admin/add-admin";
+	}
+
+	@GetMapping("/profile")
+	public String profile() {
+		return "/admin/profile";
+	}
+
+	@PostMapping("/update-profile")
+	public String updateProfile(@ModelAttribute UserDtls user, @RequestParam MultipartFile img, HttpSession session) {
+		UserDtls updateUserProfile = userService.updateUserProfile(user, img);
+		if (ObjectUtils.isEmpty(updateUserProfile)) {
+			session.setAttribute("errorMsg", "Profile not updated");
+		} else {
+			session.setAttribute("succMsg", "Profile Updated");
+		}
+		return "redirect:/admin/profile";
+	}
+
+	@PostMapping("/change-password")
+	public String changePassword(@RequestParam String newPassword, @RequestParam String currentPassword, Principal p,
+			HttpSession session) {
+		UserDtls loggedInUserDetails = commonUtil.getLoggedInUserDetails(p);
+
+		boolean matches = passwordEncoder.matches(currentPassword, loggedInUserDetails.getPassword());
+
+		if (matches) {
+			String encodePassword = passwordEncoder.encode(newPassword);
+			loggedInUserDetails.setPassword(encodePassword);
+			UserDtls updateUser = userService.updateUser(loggedInUserDetails);
+			if (ObjectUtils.isEmpty(updateUser)) {
+				session.setAttribute("errorMsg", "Password not updated !! Error in server");
+			} else {
+				session.setAttribute("succMsg", "Password Updated sucessfully");
+			}
+		} else {
+			session.setAttribute("errorMsg", "Current Password incorrect");
+		}
+
+		return "redirect:/admin/profile";
+	}
+
 }
+
